@@ -1,27 +1,43 @@
 package typelevel
 
-import scala.compiletime.ops.string.{CharAt, Length, Matches, Substring}
+import scala.compiletime.ops.string._
 import cats.implicits._
 import cats.effect._
 
 object URL extends IOApp:
 
-  sealed trait Protocol
+  sealed trait URLComponent
+
+  sealed trait Protocol extends URLComponent
   case object HTTP extends Protocol
   case object HTTPS extends Protocol
 
-  type URLRest[S <: String] <: String
+  type DomainName[S <: String]
+  type URLPath[S <: String]
+
+  type URLRest[L <: String, R <: String] <: Tuple =
+    R match
+      case "" => EmptyTuple
+      case _  =>
+        CharAt[R, 0] match
+          case '/' => (DomainName[L], URLPath[Substring[R, 1, Length[R]]])
+          case _ => URLRest[L + Substring[R, 0, 1], Substring[R, 1, Length[R]]]
 
   type URLComponents[S <: String] <: Tuple =
     S match
       case "" => EmptyTuple
       case _ =>
         Matches[S, "^https:.*"] match
-          case true => HTTPS.type *: Tuple1[Substring[S, 8, Length[S]]]
-          case false => HTTP.type *: Tuple1[Substring[S, 8, Length[S]]]
+          case true => HTTPS.type *: URLRest["", Substring[S, 8, Length[S]]]
+          case false => HTTP.type *: URLRest["", Substring[S, 8, Length[S]]]
+
+  private def fakeQueryURL(url: String): IO[Unit] = {
+    summon[URLComponents[url.type]]
+    IO.unit
+  }
 
   def run(args: List[String]): IO[ExitCode] = {
-    summon[URLComponents["https://kek"] =:= (HTTPS.type, "kek")]
+    summon[URLComponents["https://kek.com/foo/bar"] =:= (HTTPS.type, DomainName["kek.com"], URLPath["foo/bar"])]
     IO.println("kek")
       .as(ExitCode.Success)
   }
