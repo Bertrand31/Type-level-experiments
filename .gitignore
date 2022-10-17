@@ -1,0 +1,8 @@
+project
+target
+.bloop
+.bsp
+.metals
+
+rocksdb/*
+data/*
