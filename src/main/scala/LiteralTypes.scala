@@ -2,7 +2,7 @@ package typelevel
 
 object LiteralTypesInt:
 
-  import scala.compiletime.ops.int.{`+`, `-`}
+  import scala.compiletime.ops.int.{+, -}
 
   val one: 1 = 1
   val two: 2 = 2
@@ -12,7 +12,7 @@ object LiteralTypesInt:
 
 object LiteralTypesString:
 
-  import scala.compiletime.ops.string.{`+`, CharAt, Length, Substring}
+  import scala.compiletime.ops.string.{+, CharAt, Length, Substring}
 
   val foo: "foo" = "foo"
   // val bar: "bar" = "baz"
@@ -29,28 +29,27 @@ object LiteralTypesLogic:
   val localTrue: true = true
   val localFalse: false = false
   val and: localTrue.type && localFalse.type = false
+  summon[(false && true) =:= false]
+  summon[(true && true) =:= true]
 
-
-// BONUS
 object MatchTypes:
 
-  type LeafElem[X] = X match
+  type FirstElem[X] = X match
     case String => Char
     case Array[t] => t
     case Iterable[t] => t
     case AnyVal => X
 
   // Dependant typing
-  def leafElem[X](x: X): LeafElem[X] = x match
+  def firstElem[X](x: X): FirstElem[X] = x match
     case x: String      => x.charAt(0)
     case x: Array[t]    => x(0)
     case x: Iterable[t] => x.head
     case x: AnyVal      => x
 
-  leafElem("foo"): Char // 'f'
-  leafElem(List[String]("one", "two")): String // "one"
+  firstElem("foo"): Char // 'f'
+  firstElem(List("one", "two")): String // "one"
 
-// BONUS
 object RecursiveMatchTypes:
 
   type LeafElem[X] = X match
@@ -66,5 +65,5 @@ object RecursiveMatchTypes:
     case x: AnyVal      => x
 
   leafElem("foo"): Char // 'f'
-  leafElem(List("one", "two")): Char // 'o'
+  leafElem(Vector(List("one", "two"))): Char // 'o'
   leafElem(Array(3, 2)): Int // 3

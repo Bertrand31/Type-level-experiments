@@ -4,7 +4,7 @@ import scala.compiletime.ops.string._
 import cats.implicits._
 import cats.effect._
 
-object URL extends IOApp:
+object URLParser extends IOApp:
 
   sealed trait URLComponent
 
