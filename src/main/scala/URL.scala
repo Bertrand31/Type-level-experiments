@@ -31,14 +31,13 @@ object URL extends IOApp:
           case true => HTTPS.type *: URLRest["", Substring[S, 8, Length[S]]]
           case false => HTTP.type *: URLRest["", Substring[S, 8, Length[S]]]
 
-  private def fakeQueryURL(url: String): IO[Unit] = {
-    summon[URLComponents[url.type]]
-    IO.unit
-  }
+  // private def fakeQueryURL(url: String)(f: URLComponents[url.type] => IO[Unit]): IO[Unit] = {
+  //   f(url)
+  // }
 
   def run(args: List[String]): IO[ExitCode] = {
     summon[URLComponents["https://kek.com/foo/bar"] =:= (HTTPS.type, DomainName["kek.com"], URLPath["foo/bar"])]
-    IO.println("kek")
+    IO.println("test")
       .as(ExitCode.Success)
   }
 
